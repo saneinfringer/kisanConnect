@@ -1,0 +1,30 @@
+{
+  "name": "KisanConnect",
+  "version": "1.0.0",
+  "description": "A web application connecting farmers and buyers.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server/src/index.js",
+    "dev": "nodemon server/src/index.js",
+    "client": "npm start --prefix client",
+    "client-install": "npm install --prefix client",
+    "heroku-postbuild": "npm install --prefix client && npm run build --prefix client"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "mongoose": "^5.10.9",
+    "dotenv": "^8.2.0",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.4"
+  },
+  "keywords": [
+    "farmers",
+    "buyers",
+    "crops",
+    "MERN"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}

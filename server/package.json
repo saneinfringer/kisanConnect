@@ -1,0 +1,22 @@
+{
+  "name": "kisanconnect",
+  "version": "1.0.0",
+  "description": "A web application connecting farmers and buyers.",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^8.6.0",
+    "express": "^4.21.2",
+    "mongoose": "^8.19.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  },
+  "author": "Your Name",
+  "license": "ISC",
+  "keywords": []
+}
