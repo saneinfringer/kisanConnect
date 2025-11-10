@@ -1,9 +1,78 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+//updated code for header with auth state management
+import React, { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
+import { Link, useHistory } from 'react-router-dom';
+import { logout, getStoredUser } from '../services/auth';
 import './Header.css';
 
 const Header = () => {
   const [open, setOpen] = useState(false);
+  const [user, setUser] = useState(null);
+  const history = useHistory();
+
+  // single rehydrate + listeners effect (runs on mount)
+  useEffect(() => {
+    const refreshUserFromStorage = () => {
+      try {
+        // prefer centralized helper, but fall back to legacy key
+        const u = getStoredUser() || JSON.parse(localStorage.getItem('kc_user') || 'null');
+        setUser(u);
+      } catch (err) {
+        setUser(null);
+      }
+    };
+
+    // initial read
+    refreshUserFromStorage();
+
+    // events to keep header in sync across app and tabs
+    const onAuthChange = () => refreshUserFromStorage();
+    const onStorage = (e) => {
+      if (e.key === 'token' || e.key === 'user' || e.key === 'kc_user') refreshUserFromStorage();
+    };
+
+    window.addEventListener('kc-auth-change', onAuthChange);
+    window.addEventListener('storage', onStorage);
+
+    return () => {
+      window.removeEventListener('kc-auth-change', onAuthChange);
+      window.removeEventListener('storage', onStorage);
+    };
+  }, []); // run only once
+
+  const handleLogout = () => {
+    logout();
+    setUser(null);
+    window.dispatchEvent(new Event('kc-auth-change'));
+    history.push('/login');
+  };
+
+  const handleAddCropClick = (e) => {
+    // always prevent default navigation; handle logic here
+    e.preventDefault();
+
+    // refresh user from storage to ensure latest data
+    const currentUser = getStoredUser() || JSON.parse(localStorage.getItem('kc_user') || 'null');
+
+    if (currentUser?.role === 'buyer') {
+      toast.warn('⚠️ Buyers are not allowed to add crops. Please log in as a farmer.');
+      // redirect buyer to login so they can switch account
+      history.push('/login');
+      setOpen(false);
+      return;
+    }
+
+    if (!currentUser?.role) {
+      toast.info('🔒 Please sign in as a farmer to add crops.');
+      history.push('/login');
+      setOpen(false);
+      return;
+    }
+
+    // user is a farmer — proceed
+    setOpen(false);
+    history.push('/add-crop');
+  };
 
   return (
     <header className="kc-header">
@@ -11,7 +80,13 @@ const Header = () => {
         <Link to="/" className="kc-brand" aria-label="KisanConnect home">
           <svg className="kc-logo" viewBox="0 0 24 24" aria-hidden="true">
             <rect x="2" y="7" width="20" height="12" rx="3" />
-            <path d="M6 7c1.5-3 6-4 12 0" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+            <path
+              d="M6 7c1.5-3 6-4 12 0"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.2"
+              strokeLinecap="round"
+            />
           </svg>
           <div className="kc-brand-text">
             <span className="kc-name">KisanConnect</span>
@@ -23,7 +98,19 @@ const Header = () => {
           <nav className="kc-nav" role="navigation" aria-label="Main navigation">
             <ul>
               <li><Link to="/" onClick={() => setOpen(false)}>Home</Link></li>
-              <li><Link to="/add-crop" onClick={() => setOpen(false)}>Add Crop</Link></li>
+
+              {/* Always show Add Crop, but block buyers */}
+              <li>
+                {/* Use an anchor-like element to keep semantics while handling click in JS */}
+                <a
+                  href="/add-crop"
+                  onClick={handleAddCropClick}
+                  title={user?.role === 'buyer' ? 'Buyers cannot add crops' : 'Add your crop listing'}
+                >
+                  Add Crop
+                </a>
+              </li>
+
               <li><Link to="/crops" onClick={() => setOpen(false)}>View Crops</Link></li>
             </ul>
           </nav>
@@ -38,9 +125,24 @@ const Header = () => {
               <button aria-hidden="true">🔍</button>
             </label>
 
-            <Link to="/signup" className="kc-cta" onClick={() => setOpen(false)}>
-              Get Started
-            </Link>
+            {user ? (
+              <div className="kc-user-actions">
+                <span className="kc-user-name" title={user.name}>{user.name}</span>
+                <button
+                  className="kc-cta kc-logout-btn"
+                  onClick={() => {
+                    setOpen(false);
+                    handleLogout();
+                  }}
+                >
+                  Sign out
+                </button>
+              </div>
+            ) : (
+              <Link to="/signup" className="kc-cta" onClick={() => setOpen(false)}>
+                Get Started
+              </Link>
+            )}
           </div>
         </div>
 

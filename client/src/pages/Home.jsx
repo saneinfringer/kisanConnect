@@ -1,13 +1,18 @@
+// updated code for buyer prevention of add crop and merger of both header add crop and home add crop link
 import React, { useState } from 'react';
-import { Link, useHistory } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import hero from '../assets/images/kisan_hero.svg';
 import { getCrops } from '../services/api';
+import { getStoredUser } from '../services/auth';
 import './Home.css';
 
 const Home = () => {
-const history = useHistory(); // v5 navigation hook
+  const history = useHistory(); // for navigation
   const [loadingCrops, setLoadingCrops] = useState(false);
 
+  // 🔹 Handles clicking "View Crops"
   const handleViewCrops = async (e) => {
     e.preventDefault();
     try {
@@ -19,39 +24,58 @@ const history = useHistory(); // v5 navigation hook
       });
     } catch (err) {
       console.error('Failed to prefetch crops:', err);
-      history.push('/crops'); // fallback navigation
+      history.push('/crops');
     } finally {
       setLoadingCrops(false);
     }
   };
 
+  // 🔹 Handles clicking "Add Crop"
+  const handleAddCrop = (e) => {
+  e.preventDefault();
+
+  const user = getStoredUser() || JSON.parse(localStorage.getItem('kc_user') || 'null');
+
+  if (user?.role === 'buyer') {
+    toast.warn('⚠️ Buyers are not allowed to add crops. Please log in as a farmer.');
+    // redirect buyer back to login
+    history.push('/login');
+    return;
+  }
+
+  if (!user?.role) {
+    toast.info('🔒 Please sign in as a farmer to add crops.');
+    history.push('/login');
+    return;
+  }
+
+  history.push('/add-crop');
+};
+
   return (
     <div className="home-page">
-      {/* <header className="nav">
-        <div className="nav-left">
-          <h2 className="brand">KisanConnect</h2>
-          <span className="tagline">Fresh from fields to markets</span>
-        </div>
-        <div className="nav-right">
-          <Link to="/login" className="nav-link">Sign in</Link>
-          <Link to="/signup" className="btn-secondary">Get Started</Link>
-        </div>
-      </header> */}
-
       <main className="hero">
         <div className="hero-left">
           <h1 className="hero-title">Connect. Trade. Grow.</h1>
           <p className="hero-sub">
-            KisanConnect helps farmers list their harvest and buyers discover fresh produce — secure, local, and transparent.
+            KisanConnect helps farmers list their harvest and buyers discover fresh produce —
+            secure, local, and transparent.
           </p>
 
           <div className="hero-actions">
-            <Link to="/add-crop" className="btn-primary">Add Your Crop</Link>
-            <Link to="/crops" className="btn-outline">View Available Crops</Link>
+            <button onClick={handleAddCrop} className="btn-primary">
+              Add Your Crop
+            </button>
+            <button onClick={handleViewCrops} className="btn-outline" disabled={loadingCrops}>
+              {loadingCrops ? 'Loading…' : 'View Available Crops'}
+            </button>
           </div>
 
           <div className="quick-search">
-            <input type="text" placeholder="Search crops or locations (e.g., mangoes, Pune)" />
+            <input
+              type="text"
+              placeholder="Search crops or locations (e.g., mangoes, Pune)"
+            />
             <button className="search-btn">Search</button>
           </div>
 
@@ -90,15 +114,6 @@ const history = useHistory(); // v5 navigation hook
           <p>Connect with logistics partners nearby.</p>
         </div>
       </section>
-
-      {/* <footer className="footer">
-        <p>© {new Date().getFullYear()} KisanConnect — Built for every farmer</p>
-        <div className="footer-links">
-          <Link to="/about">About</Link>
-          <Link to="/terms">Terms</Link>
-          <Link to="/contact">Contact</Link>
-        </div>
-      </footer> */}
     </div>
   );
 };

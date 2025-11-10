@@ -1,6 +1,12 @@
 const mongoose = require('mongoose');
 
 const CropSchema = new mongoose.Schema({
+//   owner: {
+//   type: mongoose.Schema.Types.ObjectId,
+//   ref: 'User',
+//   required: false, // make true if every crop must belong to a user
+//  },
+
   name: {
     type: String,
     required: [true, 'Crop name is required'],

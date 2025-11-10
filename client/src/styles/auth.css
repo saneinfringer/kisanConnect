@@ -1,0 +1,56 @@
+/* auth.css - styles for get started, login, signup pages */
+
+.kc-auth-page {
+  min-height: calc(100vh - 120px); /* allow header/footer space */
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding: 40px 20px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.4));
+}
+
+.kc-auth-card {
+  width:100%;
+  max-width:480px;
+  background: rgba(255,255,255,0.96);
+  border-radius:14px;
+  padding:28px;
+  box-shadow: 0 12px 40px rgba(16,24,40,0.08);
+  text-align:center;
+}
+
+.kc-auth-card h1, .kc-auth-card h2 { margin: 0 0 12px 0; color:#0b3942; }
+.kc-lead { color:#6b7a86; margin-bottom:18px; }
+
+.kc-auth-actions { display:flex; gap:12px; justify-content:center; margin-bottom:14px; }
+.kc-btn {
+  padding:10px 16px;
+  border-radius:12px;
+  font-weight:700;
+  text-decoration:none;
+  border: none;
+  cursor:pointer;
+}
+.kc-btn-primary { background: linear-gradient(90deg,#2f8f6b,#49a878); color:white; }
+.kc-btn-outline { background:transparent; border:2px solid rgba(20,35,40,0.08); color:#18303a; }
+
+.kc-auth-form { display:flex; flex-direction:column; gap:12px; margin-top:12px; text-align:left; }
+.kc-auth-form label { font-weight:600; font-size:14px; color:#143233; }
+.kc-auth-form input {
+  padding:10px 12px;
+  border-radius:10px;
+  border:1.2px solid rgba(8,20,30,0.06);
+  font-size:14px;
+  margin-top:6px;
+}
+.kc-form-error { background:#fff0f0; color:#7a1f1f; padding:8px 10px; border-radius:8px; font-weight:700; }
+.kc-form-success { background:#eef9f0; color:#0e4d2d; padding:8px 10px; border-radius:8px; font-weight:700; }
+
+.kc-auth-footer { margin-top:14px; color:#6b7a86; font-size:14px; text-align:center; }
+.kc-auth-footer a { color:#2f8f6b; text-decoration:none; font-weight:700; }
+
+/* small responsiveness */
+@media (max-width:560px) {
+  .kc-auth-card { padding:18px; }
+  .kc-auth-actions { flex-direction:column; }
+}
