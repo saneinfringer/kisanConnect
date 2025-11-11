@@ -1,13 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useHistory } from 'react-router-dom';
 import { getCropDetails } from '../services/api';
 import ContactModal from '../components/ContactModal';
+import { startConversation } from '../services/api';
+import { getStoredUser } from '../services/auth';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 import './CropDetails.css';
 
 const CropDetails = () => {
   const { id } = useParams();
   const [crop, setCrop] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
+  const user = getStoredUser();
+  const history = useHistory();
   const [error, setError] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -80,6 +88,44 @@ const CropDetails = () => {
     );
   }
 
+    const handleMessageFarmer = async () => {
+    try {
+      if (!user) {
+        toast.info('🔒 Please log in to send a message.');
+        return;
+      }
+      if (user.role === 'farmer') {
+        toast.warn('⚠️ Farmers cannot message other farmers.');
+        return;
+      }
+      setSending(true);
+      await startConversation(crop.owner || crop.ownerId || crop.userId); // Adjust based on your crop model
+      toast.success('✅ Conversation started!');
+      window.location.href = '/messages'; // redirect to messages
+
+      // determine partner id from several possible fields
+      const partnerId =
+        (crop && (crop.owner || crop.ownerId || crop.userId || crop.farmerId)) ||
+        (crop?.farmer?._id) ||
+        null;
+
+      if (!partnerId) {
+        toast.error('⚠️ Farmer contact not available for this crop.');
+        return;
+      }
+
+      setSending(true);
+      await startConversation(partnerId);
+      toast.success('✅ Conversation started!');
+      history.push('/messages');
+    } catch (err) {
+      console.error('Failed to start conversation:', err);
+      toast.error('Failed to start conversation.');
+    } finally {
+      setSending(false);
+    }
+  };
+
   // Use the same prop names the ContactModal expects:
   // isOpen, onRequestClose, farmer
   return (
@@ -88,6 +134,18 @@ const CropDetails = () => {
       <p><strong>Price:</strong> ₹{crop.price}</p>
       <p><strong>Quantity:</strong> {crop.quantity} kg</p>
       <p><strong>Location:</strong> {crop.location}</p>
+
+      {/* Show "Message Farmer" button if logged in */}
+      {user && user.role === 'buyer' && (
+        <button
+          className="btn-primary"
+          disabled={sending}
+          onClick={handleMessageFarmer}
+          style={{ marginTop: '1rem' }}
+        >
+          {sending ? 'Sending...' : 'Message Farmer'}
+        </button>
+      )}
 
       <div style={{ display: 'flex', gap: 12, marginTop: 18 }}>
         <button className="kc-contact-btn" onClick={handleContactClick}>

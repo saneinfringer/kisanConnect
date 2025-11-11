@@ -128,6 +128,20 @@
   box-shadow: 0 6px 18px rgba(47,143,107,0.18);
 }
 
+/*user name*/
+.kc-user-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight:600;
+  color: #16343a;
+}
+
+.kc-user-name {
+  margin-right:10px;
+}
+
+
 /* Hamburger (mobile) */
 .kc-hamburger {
   display:none;

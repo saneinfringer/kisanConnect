@@ -10,14 +10,27 @@ exports.addCrop = async (req, res) => {
       return res.status(400).json({ message: 'Name, price, and quantity are required' });
     }
 
-    const newCrop = new Crop({ name, price, quantity, location, contactNumber });
+    // Include owner (if user authenticated)
+    const ownerId = req.user ? req.user.id : null;
+
+    const newCrop = new Crop({
+      name,
+      price,
+      quantity,
+      location,
+      contactNumber,
+      owner: ownerId, // ✅ properly attach farmer ID
+    });
+
     await newCrop.save();
 
-    res.status(201).json(newCrop); // Return the saved crop
+    res.status(201).json(newCrop);
   } catch (error) {
+    console.error('Error adding crop:', error);
     res.status(400).json({ message: error.message });
   }
 };
+
 
 // Get all crops
 exports.getCrops = async (req, res) => {

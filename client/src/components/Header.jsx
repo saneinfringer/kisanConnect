@@ -3,12 +3,38 @@ import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { Link, useHistory } from 'react-router-dom';
 import { logout, getStoredUser } from '../services/auth';
+import { getConversations } from '../services/api';
+
 import './Header.css';
 
 const Header = () => {
   const [open, setOpen] = useState(false);
   const [user, setUser] = useState(null);
   const history = useHistory();
+
+
+  const [unreadCount, setUnreadCount] = useState(0);
+
+useEffect(() => {
+  const fetchUnread = async () => {
+    try {
+      const convs = await getConversations();
+      const total = convs.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
+      setUnreadCount(total);
+    } catch (err) {
+      console.error('Failed to fetch unread count:', err);
+    }
+  };
+
+  if (user) {
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 10000); // refresh every 10s
+    return () => clearInterval(interval);
+  }
+}, [user]);
+
+
+
 
   // single rehydrate + listeners effect (runs on mount)
   useEffect(() => {
@@ -112,6 +138,30 @@ const Header = () => {
               </li>
 
               <li><Link to="/crops" onClick={() => setOpen(false)}>View Crops</Link></li>
+
+              {user && (
+              <li>
+                <Link to="/messages" onClick={() => setOpen(false)} style={{ position: 'relative' }}>
+      Messages
+      {unreadCount > 0 && (
+        <span
+          style={{
+            position: 'absolute',
+            top: '-4px',
+            right: '-8px',
+            background: 'red',
+            color: 'white',
+            borderRadius: '50%',
+            fontSize: '0.7rem',
+            padding: '0 5px',
+          }}
+        >
+          {unreadCount}
+        </span>
+      )}
+    </Link>
+              </li>
+           )}
             </ul>
           </nav>
 

@@ -24,6 +24,24 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+// Response interceptor to handle 401 errors globally
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error?.response?.status === 401) {
+      console.warn('⚠️ Auth token invalid or expired — clearing localStorage.');
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('kc_user');
+      window.dispatchEvent(new Event('kc-auth-change'));
+      // Optional: redirect to login
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
+
 // ---------- CROP ENDPOINTS ----------
 
 // Get all crops
@@ -69,5 +87,34 @@ export const logoutUser = () => {
   localStorage.removeItem('token');
   localStorage.removeItem('user');
 };
+
+// ---------- MESSAGES ENDPOINTS ----------
+
+// Get all conversations for the current user
+export const getConversations = async () => {
+  const response = await axiosInstance.get('/messages/conversations');
+  return response.data;
+};
+
+// Get messages for a specific conversation
+export const getMessages = async (conversationId) => {
+  const response = await axiosInstance.get(`/messages/${conversationId}`);
+  return response.data;
+};
+
+// Send a message
+export const sendMessage = async (conversationId, text) => {
+  const response = await axiosInstance.post(`/messages/${conversationId}`, { text });
+  return response.data;
+};
+
+
+// ---------- START CHAT / CONVERSATION HELPER ----------
+export const startConversation = async (partnerId, text = 'Hello!') => {
+  // This simply sends a first message if no conversation exists
+  const response = await axiosInstance.post(`/messages/${partnerId}`, { text });
+  return response.data;
+};
+
 
 export default axiosInstance;

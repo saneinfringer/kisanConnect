@@ -12,6 +12,7 @@ import CropsList from './pages/CropsList';
 import GetStarted from './pages/GetStarted';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import Messages from './pages/Messages';
 
 import './styles/main.css';
 
@@ -30,6 +31,9 @@ const App = () => {
         <Route path="/getstarted" exact component={GetStarted} />
         <Route path="/login" exact component={Login} />
         <Route path="/signup" exact component={Signup} />
+
+        {/* New messages feature */}
+        <Route path="/messages" exact component={Messages} />
       </Switch>
       <Footer />
       <ToastContainer position="top-right" autoClose={3000} />

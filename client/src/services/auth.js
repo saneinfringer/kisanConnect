@@ -10,6 +10,12 @@ const persistAuth = (data) => {
   if (data?.user) {
     localStorage.setItem('user', JSON.stringify(data.user));
   }
+  // Notify other parts of the app (same-tab listeners)
+  try {
+    window.dispatchEvent(new Event('kc-auth-change'));
+  } catch (e) {
+    // ignore in non-browser/test environments
+  }
 };
 
 export const login = async ({ phone, password }) => {
@@ -30,6 +36,9 @@ export const signup = async ({ name, phone, password, role = 'farmer' }) => {
 export const logout = () => {
   localStorage.removeItem('token');
   localStorage.removeItem('user');
+  try {
+    window.dispatchEvent(new Event('kc-auth-change'));
+  } catch (e) {}
 };
 
 export const getStoredUser = () => {
